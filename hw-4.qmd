@@ -3,3 +3,69 @@ title: "Homework 4"
 format: html
 ---
 
+# Homework 4
+
+```{r}
+library(httr)
+library(jsonlite)
+library(tidyverse)
+```
+
+
+## Task 1- Querying an API and a Tidy-Style Function
+
+### Query API and Format Response to Return Article Info
+```{r}
+
+apiKey = "44c616340dfb495f90ed954af0159a95"
+
+
+
+resp = httr::GET("https://newsapi.org/v2/everything?q=Iran&from=2026-05-13&language=en&pageSize=50&apiKey=44c616340dfb495f90ed954af0159a95")
+
+#str(resp)
+news = fromJSON(rawToChar(resp$content))
+
+#str(news)
+
+head(news$articles)
+
+```
+### Write Function to Query api
+
+```{r}
+
+getNews = function(querystr = NA, dateStr = Sys.Date(), apiKey = "44c616340dfb495f90ed954af0159a95"){
+  if (!is.na(querystr)){
+    query = paste(querystr,"&", sep = "")
+  }
+  else{
+    query = ""
+  }
+  base_url = "https://newsapi.org/v2/everything?q="
+  
+  dateURL = paste0("from=",dateStr, sep = "")
+  middleURL = "&language=en&pageSize=50&"
+  apiURL = paste("apiKey=", apiKey, sep = "")
+  
+  url = paste(base_url, query,dateURL,middleURL, apiURL, sep = "")
+  
+  news = fromJSON(rawToChar(GET(url)$content))$articles
+  
+  return (news)
+}
+
+getNews()
+
+getNews(querystr = "Aho" , dateStr = '2026-06-12' )
+
+```
+
+## Test 2
+
+```{r}
+coasters = read.csv("https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv")
+
+head(coasters)
+```
+
