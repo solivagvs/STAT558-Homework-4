@@ -23,6 +23,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -70,6 +105,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -103,8 +167,198 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="preamble" class="level1">
+<h1>Preamble</h1>
+<p>This homework practices with application programming interfaces (APIs) and exploratory data analyses (EDAs).</p>
+</section>
+<section id="task-1-querying-an-api-and-a-tidy-style-function" class="level1">
+<h1>Task 1: Querying an API and a Tidy-Style Function</h1>
+<p>This task makes use of the website newsapi.org. Having registered for a key using my NCSU email, we now do the following.</p>
+<ol type="1">
+<li>Use <code>GET()</code> from the <code>httr</code> package to return information about a topic I am interested in recently (i.e., within the past <span class="math inline">\(30\)</span> days, per the free account limit): the Ebola virus outbreak in the Democratic Republic of Congo (DRC) and Uganda.</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'ggplot2' was built under R version 4.5.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'tibble' was built under R version 4.5.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'purrr' was built under R version 4.5.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'stringr' was built under R version 4.5.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'forcats' was built under R version 4.5.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.1     ✔ stringr   1.5.2
+✔ ggplot2   4.0.0     ✔ tibble    3.3.0
+✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+✔ purrr     1.1.0     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'httr' was built under R version 4.5.3</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>ebola_news <span class="ot">&lt;-</span> <span class="fu">GET</span>(<span class="st">"https://newsapi.org/v2/everything?q=ebola&amp;from=2026-05-15&amp;language=en&amp;pageSize=50&amp;apiKey=e7e98c8f31914c04a5d15115a45ea6e3"</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>ebola_news</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Response [https://newsapi.org/v2/everything?q=ebola&amp;from=2026-05-15&amp;language=en&amp;pageSize=50&amp;apiKey=e7e98c8f31914c04a5d15115a45ea6e3]
+  Date: 2026-06-15 16:52
+  Status: 200
+  Content-Type: application/json; charset=utf-8
+  Size: 41.5 kB</code></pre>
+</div>
+</div>
+<p>(For future reference, I cannot load multiple libraries in the same <code>library</code> call separated by commas.)</p>
+<ol start="2" type="1">
+<li>We now parse what was returned to recover information about article information.</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'jsonlite'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:purrr':
+
+    flatten</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>ebola_parsed <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="fu">rawToChar</span>(ebola_news<span class="sc">$</span>content))</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(ebola_parsed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>List of 3
+ $ status      : chr "ok"
+ $ totalResults: int 3301
+ $ articles    :'data.frame':   50 obs. of  8 variables:
+  ..$ source     :'data.frame': 50 obs. of  2 variables:
+  .. ..$ id  : chr [1:50] NA NA NA NA ...
+  .. ..$ name: chr [1:50] "BBC News" "BBC News" "BBC News" "BBC News" ...
+  ..$ author     : chr [1:50] NA NA NA NA ...
+  ..$ title      : chr [1:50] "'Speed, money and compassion' - lessons from an Ebola survivor and other experts" "Red Cross volunteers die from suspected Ebola in DR Congo" "'Ebola has tortured us': Fear grips eastern DR Congo as deadly virus spreads" "At least six Americans exposed to Ebola in DR Congo, US media report" ...
+  ..$ description: chr [1:50] "Those caught up in West Africa's Ebola outbreak a decade ago on how best to tackle the current epidemic." "They are thought to have caught the virus before the outbreak was identified, the Red Cross says." "The health minister has acknowledged that medics are playing catch-up with the virus after being slow to detect it." "One of the six Americans believed to have been exposed is experiencing symptoms, according to media reports." ...
+  ..$ url        : chr [1:50] "https://www.bbc.com/news/articles/cj3p2rdx0l8o" "https://www.bbc.com/news/articles/c759knxln0wo" "https://www.bbc.com/news/articles/cvgzj0pqpyyo" "https://www.bbc.com/news/articles/cq6pz60p996o" ...
+  ..$ urlToImage : chr [1:50] "https://ichef.bbci.co.uk/news/1024/branded_news/68b3/live/8445c700-55d0-11f1-8b8c-6d33e1d5abb6.jpg" "https://ichef.bbci.co.uk/news/1024/branded_news/f4e9/live/1fde0380-56bc-11f1-89a3-d1f559421220.jpg" "https://ichef.bbci.co.uk/news/1024/branded_news/c8bb/live/9d165df0-5394-11f1-82e5-bb1c743931bd.jpg" "https://ichef.bbci.co.uk/news/1024/branded_news/3195/live/9d886d70-5293-11f1-8a13-e989d3b4b6c8.jpg" ...
+  ..$ publishedAt: chr [1:50] "2026-05-22T23:07:41Z" "2026-05-23T17:15:09Z" "2026-05-19T18:05:26Z" "2026-05-18T10:07:57Z" ...
+  ..$ content    : chr [1:50] "Three days after the funeral, he fell sick with Ebola, finding himself turning from healthcare worker to patien"| __truncated__ "The same day, the African Centres for Disease Control warned 10 other countries on the continent were at risk o"| __truncated__ "Following a visit to Ituri province, the epicentre of the outbreak, over the weekend, Congolese Health Minister"| __truncated__ "The disease spread to a number of countries within and outside of West Africa, including Guinea, Sierra Leone, "| __truncated__ ...</code></pre>
+</div>
+</div>
+<ol start="3" type="1">
+<li>Lastly, we construct a function allowing a user to more easily query this API by <code>topic</code>, <code>earliest_date</code>, and <code>API_key</code>. For this problem, we will return a <code>vector</code> of the article titles.</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>news_search <span class="ot">&lt;-</span> <span class="cf">function</span>(topic,</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">earliest_date =</span> <span class="st">"2026-05-16"</span>,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">API_key =</span> <span class="st">"e7e98c8f31914c04a5d15115a45ea6e3"</span>){</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  format_query <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"https://newsapi.org/v2/everything?q="</span>,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                         topic,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"&amp;from="</span>,</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                         earliest_date,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                         <span class="st">"&amp;language=en&amp;pageSize=50&amp;apiKey="</span>,</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                         API_key)</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  news_query <span class="ot">&lt;-</span> <span class="fu">GET</span>(format_query)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  news_parsed <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="fu">rawToChar</span>(news_query<span class="sc">$</span>content))</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>  news_parsed<span class="sc">$</span>articles<span class="sc">$</span>title</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>First, let us query on “AI”.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">news_search</span>(<span class="st">"AI"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "AI leaders call for tougher protections against AI-aided bioweapons"               
+ [2] "Microsoft AI chief walks back comments about AI taking over white-collar work"     
+ [3] "Google’s AI search is so broken it can ‘disregard’ what you’re looking for"        
+ [4] "YouTube is putting AI labels where you’ll actually see them"                       
+ [5] "The Endless AI guitar pedal has potential"                                         
+ [6] "Apple announces visionOS 27 with Siri AI"                                          
+ [7] "Let us filter AI slop, you cowards"                                                
+ [8] "We Asked the ‘Future of Truth’ Author to Explain How He Used AI. It Didn’t Go Well"
+ [9] "Spotify Studio’s AI agent creates a daily podcast just for you"                    
+[10] "Pope Leo calls for being ‘profoundly human’ in the age of AI"                      
+[11] "Apple’s best AI idea looks a lot like vibe coding"                                 
+[12] "Apple wants Europe to blink"                                                       
+[13] "Apple’s new Siri AI knows when to shut up"                                         
+[14] "The AI Era Is Creating a Bug Hunting Arms Race"                                    
+[15] "The Gulf’s AI Boom Has an Undersea Cable Problem"                                  </code></pre>
+</div>
+</div>
+<p>Finally, let us query, within the past week, on the “NBA”.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">news_search</span>(<span class="st">"NBA"</span>, <span class="st">"2026-06-08"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "Five people injured in stabbing at New York City's Penn Station"                                      
+ [2] "Knicks fans go wild as New York team makes biggest comeback in NBA Finals history"                    
+ [3] "Where to watch Knicks vs Spurs game 5: NBA Finals live stream, channel, odds, venue"                  
+ [4] "Sports are pricing out the fans who made them rich"                                                   
+ [5] "WATCH: NY Knicks are 'playing like a veteran team': Analyst"                                          
+ [6] "Taylor Swift, Michael J. Fox and more attend Knicks-Spurs NBA Finals Game 4 at MSG"                   
+ [7] "San Antonio Spurs win 115-111 victory over New York Knicks in Game 3"                                 
+ [8] "WATCH: Game 4 could reshape the NBA Finals narrative"                                                 
+ [9] "WATCH: The historic 2026 NBA Finals and what comes next"                                              
+[10] "Suspect sought after teen beaten into coma near MSG after Knicks' Game 4 win: Police"                 
+[11] "Pedestrian traffic restricted in Midtown Manhattan as Trump's NBA Finals trip spurs intense security" 
+[12] "WATCH: New York coffee shop goes viral with Knicks spirit"                                            
+[13] "New York hosts San Antonio with 2-1 series lead"                                                      
+[14] "WATCH: Police on alert for malicious activity as Knicks host NBA Finals"                              
+[15] "WATCH: Jalen Brunson and dad on unbreakable father-son bond through basketball"                       
+[16] "WATCH: What just happened? Inside the New York Knicks' historic comeback"                             
+[17] "WATCH: Chase lights up New York City for the NBA Finals"                                              
+[18] "'The greatest day of my life' - Knicks fans celebrate in San Antonio"                                 
+[19] "WATCH: Rowdy fans pour into streets after NBA Finals game in NYC"                                     
+[20] "Trump to cheer on Knicks at NBA Finals game in New York City"                                         
+[21] "The Latest: Trump dismisses idea that Iran betrays his ‘no new wars’ campaign message"                
+[22] "Knicks complete record rally from 29 points down and beat Spurs"                                      
+[23] "Jordyn Woods' Knicks bag isn't just lucky. It's smart business."                                      
+[24] "As Trump Fell Asleep At The NBA Finals, Mayor Mamdani Enjoyed The Knicks Game In The Nosebleed Seats" 
+[25] "Trump And MAGA Are Not Exactly Coping...Well With The Extreme Booing He Receieved At The NBA Finals"  
+[26] "Why Do Some NBA Players Seem to Hate Gatorade?"                                                       
+[27] "Flip in win probability for Knicks vs. Spurs"                                                         
+[28] "The City That Never Sleeps Got Its NBA Win Streak Cursed by the Queens Man Who Did"                   
+[29] "MiB: Joe McLean, MAI Capital"                                                                         
+[30] "WATCH: Hiker survives grizzly bear attack: 'I thought...this is it'"                                  
+[31] "WATCH: Celebrating 30 years of 'Toy Story' and beyond"                                                
+[32] "To find the World Cup's Cinderellas, we have to start with the group stage"                           
+[33] "Trump says pilots are fine after U.S. helicopter crashes near Strait of Hormuz"                       
+[34] "WATCH: 2026 Tony Awards biggest moments"                                                              
+[35] "WATCH: Taylor Swift's new 'Toy Story 5' single sets&nbsp;multiple records"                                 
+[36] "WATCH: 3 soccer fans bike 11,000 miles for World Cup"                                                 
+[37] "WATCH: Spice reflects on legacy, culture and Caribbean American Heritage Month"                       
+[38] "WATCH: Preview of the Los Angeles Pride parade"                                                       
+[39] "Knicks NBA Championship Merch Includes Official Locker Room T-Shirt, Signed Jalen Brunson Basketballs"
+[40] "8 Things That Didn’t Exist When the Knicks Last Won the Championship"                                 
+[41] "Trump Booed Loudly During National Anthem at Knicks Finals Game"                                      
+[42] "Wu-Tang Clan Hit the Court for NBA Finals Game 4 Halftime Show"                                       
+[43] "Late-Night Hosts Take Aim at Trump’s Knicks Game Appearance: ‘He Hit Them With a Jinx’"               
+[44] "Cardi B Shows Out for New York During NBA Finals Game 3 Halftime&nbsp;Show"                                
+[45] "All the Celebrities Flocking to Watch Knicks vs. Spurs in the NBA Finals"                             
+[46] "27.5\" WILSON NBA DRV Series Basketball (Size 5) $10"                                                 
+[47] "Knicks beat Spurs after record NBA Finals comeback"                                                   
+[48] "Kith’s Knicks-Flavored Air Max Is Bigger Than the Game"                                               
+[49] "WATCH: This dog and cat form unlikely friendship"                                                     
+[50] "WATCH: Girl with no musical training stuns with handpan talent"                                       </code></pre>
+</div>
+</div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

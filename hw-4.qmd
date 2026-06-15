@@ -1,5 +1,70 @@
 ---
 title: "Homework 4"
 format: html
+editor_options: 
+  chunk_output_type: console
 ---
 
+#  Preamble
+This homework practices with application programming interfaces (APIs) and exploratory data analyses (EDAs).
+
+# Task 1: Querying an API and a Tidy-Style Function
+This task makes use of the website newsapi.org. Having registered for a key using my NCSU email, we now do the following.
+
+1. Use `GET()` from the `httr` package to return information about a topic I am interested in recently (i.e., within the past $30$ days, per the free account limit): the Ebola virus outbreak in the Democratic Republic of Congo (DRC) and Uganda.
+
+```{r hw_4_task_1_response_1}
+library(tidyverse)
+library(dplyr)
+library(httr)
+
+ebola_news <- GET("https://newsapi.org/v2/everything?q=ebola&from=2026-05-15&language=en&pageSize=50&apiKey=e7e98c8f31914c04a5d15115a45ea6e3")
+
+ebola_news
+```
+
+(For future reference, I cannot load multiple libraries in the same `library` call separated by commas.)
+
+2. We now parse what was returned to recover information about article information.
+
+```{r hw_4_task_1_response_2}
+library(jsonlite)
+
+ebola_parsed <- fromJSON(rawToChar(ebola_news$content))
+
+str(ebola_parsed)
+```
+
+3. Lastly, we construct a function allowing a user to more easily query this API by `topic`, `earliest_date`, and `API_key`. For this problem, we will return a `vector` of the article titles.
+
+```{r hw_4_task_1_response_3_part_1}
+news_search <- function(topic,
+                        earliest_date = "2026-05-16",
+                        API_key = "e7e98c8f31914c04a5d15115a45ea6e3"){
+  
+  format_query <- paste0("https://newsapi.org/v2/everything?q=",
+                         topic,
+                         "&from=",
+                         earliest_date,
+                         "&language=en&pageSize=50&apiKey=",
+                         API_key)
+  
+  news_query <- GET(format_query)
+  
+  news_parsed <- fromJSON(rawToChar(news_query$content))
+  
+  news_parsed$articles$title
+}
+```
+
+First, let us query on "AI".
+
+```{r hw_4_task_1_response_3_part_2}
+news_search("AI")
+```
+
+Finally, let us query, within the past week, on the "NBA".
+
+```{r hw_4_task_1_response_3_part_3}
+news_search("NBA", "2026-06-08")
+```
