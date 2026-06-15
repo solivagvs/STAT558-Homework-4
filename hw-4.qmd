@@ -1,6 +1,9 @@
 ---
 title: "Homework 4"
 format: html
+editor: 
+  markdown: 
+    wrap: 72
 ---
 
 # Homework 4
@@ -11,10 +14,10 @@ library(jsonlite)
 library(tidyverse)
 ```
 
-
 ## Task 1- Querying an API and a Tidy-Style Function
 
 ### Query API and Format Response to Return Article Info
+
 ```{r}
 
 apiKey = "44c616340dfb495f90ed954af0159a95"
@@ -31,6 +34,7 @@ news = fromJSON(rawToChar(resp$content))
 head(news$articles)
 
 ```
+
 ### Write Function to Query api
 
 ```{r}
@@ -55,9 +59,9 @@ getNews = function(querystr = NA, dateStr = Sys.Date(), apiKey = "44c616340dfb49
   return (news)
 }
 
-getNews()
+head(getNews())
 
-getNews(querystr = "Aho" , dateStr = '2026-06-12' )
+head(getNews(querystr = "Aho" , dateStr = '2026-06-12'))
 
 ```
 
@@ -76,6 +80,7 @@ coasters = coasters |> select(-c(Boundary, Latitude, Longitude))
 
 str(coasters)
 ```
+
 ### Convert Data to Intended Types:
 
 ```{r}
@@ -88,6 +93,7 @@ coasters = coasters |> mutate(AgeGroup = as.factor(AgeGroup),
 
 
 ```
+
 ### Basic EDA
 
 We will look how data is structured
@@ -109,24 +115,32 @@ na_counts = coasters |>
 na_counts
 
 ```
-The following columns contain missing data:
--    TopSpeed (11.7% Missing)
--    MaxHeight (1.24% Missing)
--    Drop (10.2% Missing)
--    Length(5.2% Missing)
--    Duration (10.4% Missing)
 
-All columns with missing data are numeric. We can do the following to deal with the missing data:
--    Impute missing values (with means, group means, etc)
--    Remove Observation with missing data
+The following columns contain missing data:
+
+-   TopSpeed (11.7% Missing)
+
+-   MaxHeight (1.24% Missing)
+
+-   Drop (10.2% Missing)
+
+-   Length(5.2% Missing)
+
+-   Duration (10.4% Missing)
+
+All columns with missing data are numeric. We can do the following to
+deal with the missing data: - Impute missing values (with means, group
+means, etc) - Remove Observation with missing data
 
 ### Contingency Tables
 
 #### 1-Way
+
 ```{r}
 
 table(coasters$Type)
 ```
+
 There are many more steel coasters than wood coasters in the dataset.
 
 #### 2-Way
@@ -135,19 +149,25 @@ There are many more steel coasters than wood coasters in the dataset.
 table(coasters$Type, coasters$AgeGroup)
 
 ```
-It looks like wood coasters have a more even distribution of age, while steel coasters are mostly newer. This makes sense, as steel coasters have not been around as long as wood coasters
+
+It looks like wood coasters have a more even distribution of age, while
+steel coasters are mostly newer. This makes sense, as steel coasters
+have not been around as long as wood coasters
 
 #### 3-Way
 
 ```{r}
 table(coasters$Type, coasters$AgeGroup, coasters$Census.Region)
 ```
-The Northeast region has more old wood coasters than all of the other regions by a large margin. Could this be because of all of the old boardwalks in the northeast that had the first amusement parks?
 
+The Northeast region has more old wood coasters than all of the other
+regions by a large margin. Could this be because of all of the old
+boardwalks in the northeast that had the first amusement parks?
 
 ### Conditional Two-Way Contingency Table:
 
-Look at a 2-Way Contingency Table for Coaster Age and Region for Steel coasters only.
+Look at a 2-Way Contingency Table for Coaster Age and Region for Steel
+coasters only.
 
 ```{r}
 coasterTable = table(coasters$Type, coasters$AgeGroup, coasters$Census.Region)
@@ -164,14 +184,15 @@ coasters |>
   pivot_wider(names_from = Type, values_from = count)
 ```
 
-
 ### Create Plots
 
 #### Stacked Bar Graph
+
 ```{r}
 g = ggplot(data = coasters, aes(x = Type, fill = AgeGroup))
 g + geom_bar() + coord_flip()
 ```
+
 #### Side By Side
 
 ```{r}
@@ -192,6 +213,7 @@ coasterSummary = coasters |>
 
 coasterSummary
 ```
+
 ### Summarize while filtering
 
 Summary data for wood coasters only
@@ -207,9 +229,8 @@ coasterSummaryWood = coasters |>
 coasterSummaryWood
 ```
 
-
-
 ### Numeric Summaries By Group (Region)
+
 ```{r}
 coasterGroupSummary = coasters |>
   group_by(Census.Region) |>
@@ -221,7 +242,6 @@ coasterGroupSummary = coasters |>
 coasterGroupSummary
 ```
 
-
 ### Correlation between top speed and max height
 
 ```{r}
@@ -231,8 +251,8 @@ coasters |>
   cor()
 
 ```
-### Distribution of Height by Type
 
+### Distribution of Height by Type
 
 #### Overlayed Histograms
 
@@ -240,8 +260,10 @@ coasters |>
 g <- ggplot(coasters |> drop_na(), aes(x = TopSpeed))
 g + geom_histogram(alpha = 0.5, aes(fill = Type))
 ```
-Wood coasters' top speed appears to be normally distributed. For steel coasters, the distribution appears to be bimodal. This could be because lots of new kids roller coasters could be steel.
 
+Wood coasters' top speed appears to be normally distributed. For steel
+coasters, the distribution appears to be bimodal. This could be because
+lots of new kids roller coasters could be steel.
 
 #### Density Plot
 
@@ -249,13 +271,17 @@ Wood coasters' top speed appears to be normally distributed. For steel coasters,
 g <- ggplot(coasters |> drop_na(), aes(x = TopSpeed))
 g + geom_density(alpha = 0.5, aes(fill = Type))
 ```
-Wood and Steel coasters have a similar center, but the speed for steel coasters has much more varation than that for wood coasters.
+
+Wood and Steel coasters have a similar center, but the speed for steel
+coasters has much more varation than that for wood coasters.
 
 #### Box Plot
+
 ```{r}
 g <- ggplot(coasters |> drop_na(), aes(x = TopSpeed))
 g + geom_boxplot(alpha = 0.5, aes(fill = Type))
 ```
+
 IQR is much wider for steel coasters than for wood coasters.
 
 ### Scatter Plots (Speed vs Height)
@@ -264,15 +290,20 @@ IQR is much wider for steel coasters than for wood coasters.
 g <- ggplot(coasters |> drop_na(), aes(x = TopSpeed, y = MaxHeight))
 g + geom_point(aes(color = Type))
 ```
-The relationship between speed and height seems to be consistent across type. Steel coasters have higher heights and speed.
+
+The relationship between speed and height seems to be consistent across
+type. Steel coasters have higher heights and speed.
 
 ### Faceting For Generating Multiple Plots Across Region
+
 ```{r}
 g <- ggplot(coasters |> drop_na(), aes(x = TopSpeed, y = MaxHeight))
 g + geom_point(aes(color = Type)) + facet_grid(Census.Region ~ .)
 
 ```
-Speed vs Height relationship holds across regions (this makes sense). The West has the least wood coasters by far
+
+Speed vs Height relationship holds across regions (this makes sense).
+The West has the least wood coasters by far
 
 ### Speed vs Height Mutiple Facets (Region and Type)
 
@@ -280,4 +311,7 @@ Speed vs Height relationship holds across regions (this makes sense). The West h
 g <- ggplot(coasters |> drop_na(), aes(x = TopSpeed, y = MaxHeight))
 g + geom_point() + facet_grid(Census.Region ~ Type)
 ```
-When we look at the relationships between speed and height by the type of coaster, it appears that the relationship between speed and height is more exponential for steel coasters than wood coasters
+
+When we look at the relationships between speed and height by the type
+of coaster, it appears that the relationship between speed and height is
+more exponential for steel coasters than wood coasters
