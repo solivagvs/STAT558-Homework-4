@@ -166,3 +166,119 @@ roller_coaster |>
   pivot_wider(names_from = scale, values_from = count)
 ```
 
+* Now we begin to explore the data using graphs, starting with a stacked bar graph on `census_region` and `scale`.
+
+```{r hw_4_task_2_response_05_part_1}
+library(ggplot2)
+
+ggplot(data = roller_coaster, aes(x = census_region, fill = scale)) +
+  geom_bar() +
+  labs(x = "Census Region", y = "Quantity",
+       title = "Number of Roller Coasters",
+       subtitle = "Stacked Bars") +
+       theme(plot.title = element_text(hjust = 0.5),
+             plot.subtitle = element_text(hjust = 0.5)) + # centers titles
+       scale_fill_discrete("Scale") # Re-titles Legend
+```
+
+From this graph we can see `South` dominates the roller coaster scene.
+
+Now we construct a side-by-side bar graph, this time using `census_region` and `age_group`
+
+```{r hw_4_task_2_response_05_part_2}
+ggplot(data = roller_coaster, aes(x = census_region, fill = age_group)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Census Region", y = "Quantity",
+       title = "Number of Roller Coasters",
+       subtitle = "Side-by-Side Bar Plot") +
+       theme(plot.title = element_text(hjust = 0.5),
+             plot.subtitle = element_text(hjust = 0.5)) +
+       scale_fill_discrete(name = "Age Group",
+                           labels = c("Older", "Recent", "Newest")) # Re-titles Categories
+```
+
+For once, another category beats out `South`: `Northeast` has the highest quantity of `Older` roller coasters, which may make sense given the spread of industrialization across the US.
+
+## Numeric Variables (and across groups)
+For this section we will focus on the quantitative data from the roller coaster data set.
+
+1. We begin by finding numeric summaries for `max_height` and `number_of_inversions`.
+
+```{r hw_4_task_2_response_06_part_1}
+roller_coaster |>
+  summarize(across(c(max_height, number_of_inversions), 
+                   list("mean" = ~ mean(.x, na.rm = TRUE),
+                        "median" = ~ median(.x, na.rm = TRUE),
+                        "std_dev" = ~ sd(.x, na.rm = TRUE),
+                        "IQR" = ~ IQR(.x, na.rm = TRUE)),
+                   .names = "{.fn}_{.col}")) |>
+  simplify()
+```
+
+Evidently, a majority of roller coasters in the US have no inversions ("loop-de-loops"), as the median indicates. Since $\mu_{\text{max height}} > Q_{2_{\text{max height}}}$, we may conclude the `max_heights` is skewed right (positively skewed), i.e., in the direction of the mean.
+
+Now we repeat the analyses, looking at only those roller coasters whose scale is `Extreme`.
+
+```{r hw_4_task_2_response_06_part_2}
+roller_coaster |>
+  filter(scale == "Extreme") |>
+  summarize(across(c(max_height, number_of_inversions), 
+                   list("mean" = ~ mean(.x, na.rm = TRUE),
+                        "median" = ~ median(.x, na.rm = TRUE),
+                        "std_dev" = ~ sd(.x, na.rm = TRUE),
+                        "IQR" = ~ IQR(.x, na.rm = TRUE)),
+                   .names = "{.fn}_{.col}")) |>
+  simplify()
+```
+
+Restricted to this `scale`, the mean and median `max_height`s are arppoximately $50$ feet (?) greater. The right-skewness of `max_height` is maintained, but within this group we note there are, on average, $2$ inversions.
+
+2. We repeat the analyses, grouping by `census_region`.
+
+```{r hw_4_task_2_response_07}
+roller_coaster |>
+  group_by(census_region) |>
+  summarize(across(c(max_height, number_of_inversions), 
+                   list("mean" = ~ mean(.x, na.rm = TRUE),
+                        "median" = ~ median(.x, na.rm = TRUE),
+                        "std_dev" = ~ sd(.x, na.rm = TRUE),
+                        "IQR" = ~ IQR(.x, na.rm = TRUE)),
+                   .names = "{.fn}_{.col}")) |>
+  print(width = Inf) # prints all the columns
+```
+
+This shows the `mean_height` is consistently skewed right across the regions of the US, with the tallest roller coasters appearing to be in the `Midwest`, also with the highest variation. While the median `number_of_inversions` is still $0$, the `West` region appears to have the highest mean `number_of_inversions`.
+
+3. We repeat the analyses, grouping by `census_region` and `scale`.
+
+```{r hw_4_task_2_response_08}
+roller_coaster |>
+  group_by(census_region, scale) |>
+  summarize(across(c(max_height, number_of_inversions), 
+                   list("mean" = ~ mean(.x, na.rm = TRUE),
+                        "median" = ~ median(.x, na.rm = TRUE),
+                        "std_dev" = ~ sd(.x, na.rm = TRUE),
+                        "IQR" = ~ IQR(.x, na.rm = TRUE)),
+                   .names = "{.fn}_{.col}")) |>
+  print(width = Inf)
+```
+
+This demonstrates that while the `Midwest` region appears to value `max_height` more than the other regions, the other regions appear to value `number_of_inversions` more than `Midwest`. Note there appears to be a correlation between the factor `Extreme` and `number_of_inversions`, as might be expected.
+
+4. Next we craft a correlation matrix among all $9$ numeric variables.
+
+```{r hw_4_task_2_response_09}
+numeric_data <- roller_coaster[, sapply(roller_coaster, is.numeric)] # returns just the portion of the data that is numeric
+
+cor(numeric_data, use = "complete.obs")
+```
+
+The strongest correlations appear between the `top_speed`, `max_height`, `drop`, and `length`, which from a physics standpoint makes sense, whereas the weakest correlations appear with the `latitude` and `longitude` variables. That makes sense because location should not have much impact on the other variables, and vice-versa.
+
+5. 
+
+6. 
+
+7. 
+
+8. 

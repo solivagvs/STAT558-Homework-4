@@ -187,7 +187,7 @@ window.Quarto = {
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>ebola_news</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Response [https://newsapi.org/v2/everything?q=ebola&amp;from=2026-05-15&amp;language=en&amp;pageSize=50&amp;apiKey=e7e98c8f31914c04a5d15115a45ea6e3]
-  Date: 2026-06-15 19:25
+  Date: 2026-06-15 22:13
   Status: 200
   Content-Type: application/json; charset=utf-8
   Size: 41.5 kB</code></pre>
@@ -206,7 +206,7 @@ window.Quarto = {
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 3
  $ status      : chr "ok"
- $ totalResults: int 3301
+ $ totalResults: int 3311
  $ articles    :'data.frame':   50 obs. of  8 variables:
   ..$ source     :'data.frame': 50 obs. of  2 variables:
   .. ..$ id  : chr [1:50] NA NA NA NA ...
@@ -452,57 +452,314 @@ window.Quarto = {
   West           54     29      7     32 122
   Sum           269    178     28    160 635</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(roller_coaster<span class="sc">$</span>census_region, roller_coaster<span class="sc">$</span>scale,</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>      roller_coaster<span class="sc">$</span>age_group) <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>three_way <span class="ot">&lt;-</span> <span class="fu">table</span>(roller_coaster<span class="sc">$</span>census_region, roller_coaster<span class="sc">$</span>scale,</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>                   roller_coaster<span class="sc">$</span>age_group) <span class="sc">|&gt;</span></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addmargins</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<ul>
+<li><p>In the first table, we observe the <code>South</code> has the most roller coasters according to this data set, at <span class="math inline">\(223\)</span>.</p></li>
+<li><p>In the second table, we observe that of the <span class="math inline">\(160\)</span> total <code>Thrill</code> roller coasters, the fewest occurs in the <code>West</code>, at <span class="math inline">\(32\)</span>.</p></li>
+<li><p>In the last table, we notice there aren’t any (i.e., <span class="math inline">\(0\)</span>) <code>Older</code> roller coasters in the <code>West</code> with a <code>Family</code> classification. Of the <code>Newest</code> roller coasters, the fewest occurs in the <code>Northeast</code> with <code>Kiddie</code> as <code>scale</code>.</p></li>
+<li><p>Next we create a conditional two-way table on the <code>Newest</code> roller coasters for <code>scale</code> and <code>census_region</code>.</p></li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>roller_coaster <span class="sc">|&gt;</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_group <span class="sc">==</span> <span class="st">"3:Newest"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(census_region, scale) <span class="sc">|&gt;</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>() <span class="sc">|&gt;</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addmargins</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>, ,  = 1:Older
-
-           
-            Extreme Family Kiddie Thrill Sum
-  Midwest         6      2      1      8  17
-  Northeast       3      7      3      8  21
-  South           5      4      0      8  17
-  West            3      0      1     10  14
-  Sum            17     13      5     34  69
-
-, ,  = 2:Recent
-
-           
-            Extreme Family Kiddie Thrill Sum
-  Midwest        21      9      3     12  45
-  Northeast      22     13      3     10  48
-  South          38      9      0     10  57
-  West           24      9      3      4  40
-  Sum           105     40      9     36 190
-
-, ,  = 3:Newest
-
-           
+<pre><code>             scale
+census_region Extreme Family Kiddie Thrill Sum
+    Midwest        34     21      4     13  72
+    Northeast      37     29      1     20  87
+    South          49     55      6     39 149
+    West           27     20      3     18  68
+    Sum           147    125     14     90 376</code></pre>
+</div>
+</div>
+<p>Then we repeat this process by subsetting our previous three-way table.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>three_way[, , <span class="st">"3:Newest"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           
             Extreme Family Kiddie Thrill Sum
   Midwest        34     21      4     13  72
   Northeast      37     29      1     20  87
   South          49     55      6     39 149
   West           27     20      3     18  68
-  Sum           147    125     14     90 376
-
-, ,  = Sum
-
-           
-            Extreme Family Kiddie Thrill Sum
-  Midwest        61     32      8     33 134
-  Northeast      62     49      7     38 156
-  South          92     68      6     57 223
-  West           54     29      7     32 122
-  Sum           269    178     28    160 635</code></pre>
+  Sum           147    125     14     90 376</code></pre>
 </div>
 </div>
-<pre><code>- In the first table, we observe the `South` has the most roller coasters according to this data set, at $223$.
-
-- In the second table, we observe that of the $160$ total `Thrill` roller coasters, the fewest occurs in the `West`, at $32$.
-
-- In the last table, we notice there aren't any (i.e., $0$) `Older` roller coasters in the `West` with a `Family` classification.
-Of the `Newest` roller coasters, the fewest occurs in the `Northeast` with `Kiddie` as `scale`.</code></pre>
+<ul>
+<li>Then we create a two-way contingency table using <code>group_by</code> and <code>summarize</code> and <code>pivot_wider</code> to mimic the output of <code>table</code>.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>roller_coaster <span class="sc">|&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(census_region, scale) <span class="sc">|&gt;</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">count =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> scale, <span class="at">values_from =</span> count)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 5
+# Groups:   census_region [4]
+  census_region Extreme Family Kiddie Thrill
+  &lt;fct&gt;           &lt;int&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt;
+1 Midwest            61     32      8     33
+2 Northeast          62     49      7     38
+3 South              92     68      6     57
+4 West               54     29      7     32</code></pre>
+</div>
+</div>
+<ul>
+<li>Now we begin to explore the data using graphs, starting with a stacked bar graph on <code>census_region</code> and <code>scale</code>.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> roller_coaster, <span class="fu">aes</span>(<span class="at">x =</span> census_region, <span class="at">fill =</span> scale)) <span class="sc">+</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Census Region"</span>, <span class="at">y =</span> <span class="st">"Quantity"</span>,</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Number of Roller Coasters"</span>,</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Stacked Bars"</span>) <span class="sc">+</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>       <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span> <span class="co"># centers titles</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>       <span class="fu">scale_fill_discrete</span>(<span class="st">"Scale"</span>) <span class="co"># Re-titles Legend</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw-4_files/figure-html/hw_4_task_2_response_05_part_1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>From this graph we can see <code>South</code> dominates the roller coaster scene.</p>
+<p>Now we construct a side-by-side bar graph, this time using <code>census_region</code> and <code>age_group</code></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> roller_coaster, <span class="fu">aes</span>(<span class="at">x =</span> census_region, <span class="at">fill =</span> age_group)) <span class="sc">+</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Census Region"</span>, <span class="at">y =</span> <span class="st">"Quantity"</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Number of Roller Coasters"</span>,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Side-by-Side Bar Plot"</span>) <span class="sc">+</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>       <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>       <span class="fu">scale_fill_discrete</span>(<span class="at">name =</span> <span class="st">"Age Group"</span>,</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>                           <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Older"</span>, <span class="st">"Recent"</span>, <span class="st">"Newest"</span>)) <span class="co"># Re-titles Categories</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw-4_files/figure-html/hw_4_task_2_response_05_part_2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>For once, another category beats out <code>South</code>: <code>Northeast</code> has the highest quantity of <code>Older</code> roller coasters, which may make sense given the spread of industrialization across the US.</p>
+</section>
+<section id="numeric-variables-and-across-groups" class="level2">
+<h2 class="anchored" data-anchor-id="numeric-variables-and-across-groups">Numeric Variables (and across groups)</h2>
+<p>For this section we will focus on the quantitative data from the roller coaster data set.</p>
+<ol type="1">
+<li>We begin by finding numeric summaries for <code>max_height</code> and <code>number_of_inversions</code>.</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>roller_coaster <span class="sc">|&gt;</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">c</span>(max_height, number_of_inversions), </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="st">"mean"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"median"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"std_dev"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"IQR"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">IQR</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>                   <span class="at">.names =</span> <span class="st">"{.fn}_{.col}"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">simplify</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             mean_max_height            median_max_height 
+                  76.8039872                   64.3000000 
+          std_dev_max_height               IQR_max_height 
+                  61.5113686                   81.0000000 
+   mean_number_of_inversions  median_number_of_inversions 
+                   0.9212598                    0.0000000 
+std_dev_number_of_inversions     IQR_number_of_inversions 
+                   1.7725843                    1.0000000 </code></pre>
+</div>
+</div>
+<p>Evidently, a majority of roller coasters in the US have no inversions (“loop-de-loops”), as the median indicates. Since <span class="math inline">\(\mu_{\text{max height}} &gt; Q_{2_{\text{max height}}}\)</span>, we may conclude the <code>max_heights</code> is skewed right (positively skewed), i.e., in the direction of the mean.</p>
+<p>Now we repeat the analyses, looking at only those roller coasters whose scale is <code>Extreme</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>roller_coaster <span class="sc">|&gt;</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(scale <span class="sc">==</span> <span class="st">"Extreme"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">c</span>(max_height, number_of_inversions), </span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="st">"mean"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"median"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"std_dev"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"IQR"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">IQR</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>                   <span class="at">.names =</span> <span class="st">"{.fn}_{.col}"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">simplify</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             mean_max_height            median_max_height 
+                  126.495539                   110.000000 
+          std_dev_max_height               IQR_max_height 
+                   58.902617                    55.000000 
+   mean_number_of_inversions  median_number_of_inversions 
+                    2.174721                     2.000000 
+std_dev_number_of_inversions     IQR_number_of_inversions 
+                    2.167250                     4.000000 </code></pre>
+</div>
+</div>
+<p>Restricted to this <code>scale</code>, the mean and median <code>max_height</code>s are arppoximately <span class="math inline">\(50\)</span> feet (?) greater. The right-skewness of <code>max_height</code> is maintained, but within this group we note there are, on average, <span class="math inline">\(2\)</span> inversions.</p>
+<ol start="2" type="1">
+<li>We repeat the analyses, grouping by <code>census_region</code>.</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>roller_coaster <span class="sc">|&gt;</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(census_region) <span class="sc">|&gt;</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">c</span>(max_height, number_of_inversions), </span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="st">"mean"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"median"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"std_dev"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"IQR"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">IQR</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>                   <span class="at">.names =</span> <span class="st">"{.fn}_{.col}"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">width =</span> <span class="cn">Inf</span>) <span class="co"># prints all the columns</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 9
+  census_region mean_max_height median_max_height std_dev_max_height
+  &lt;fct&gt;                   &lt;dbl&gt;             &lt;dbl&gt;              &lt;dbl&gt;
+1 Midwest                  84.2              74.4               68.6
+2 Northeast                72.2              56                 60.8
+3 South                    74.7              63.5               57.7
+4 West                     78.4              68.5               61.0
+  IQR_max_height mean_number_of_inversions median_number_of_inversions
+           &lt;dbl&gt;                     &lt;dbl&gt;                       &lt;dbl&gt;
+1           88.5                     0.866                           0
+2           81.2                     0.885                           0
+3           75.5                     0.937                           0
+4           71.6                     1                               0
+  std_dev_number_of_inversions IQR_number_of_inversions
+                         &lt;dbl&gt;                    &lt;dbl&gt;
+1                         1.69                        0
+2                         1.80                        0
+3                         1.79                        1
+4                         1.80                        1</code></pre>
+</div>
+</div>
+<p>This shows the <code>mean_height</code> is consistently skewed right across the regions of the US, with the tallest roller coasters appearing to be in the <code>Midwest</code>, also with the highest variation. While the median <code>number_of_inversions</code> is still <span class="math inline">\(0\)</span>, the <code>West</code> region appears to have the highest mean <code>number_of_inversions</code>.</p>
+<ol start="3" type="1">
+<li>We repeat the analyses, grouping by <code>census_region</code> and <code>scale</code>.</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>roller_coaster <span class="sc">|&gt;</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(census_region, scale) <span class="sc">|&gt;</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">c</span>(max_height, number_of_inversions), </span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="st">"mean"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"median"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"std_dev"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"IQR"</span> <span class="ot">=</span> <span class="er">~</span> <span class="fu">IQR</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>                   <span class="at">.names =</span> <span class="st">"{.fn}_{.col}"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">width =</span> <span class="cn">Inf</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 16 × 10
+# Groups:   census_region [4]
+   census_region scale   mean_max_height median_max_height std_dev_max_height
+   &lt;fct&gt;         &lt;fct&gt;             &lt;dbl&gt;             &lt;dbl&gt;              &lt;dbl&gt;
+ 1 Midwest       Extreme           137.              116.               62.9 
+ 2 Midwest       Family             20.7              14                14.2 
+ 3 Midwest       Kiddie             11                12                 1.85
+ 4 Midwest       Thrill             63.1              55                25.7 
+ 5 Northeast     Extreme           122.              110                62.1 
+ 6 Northeast     Family             28.7              17                27.2 
+ 7 Northeast     Kiddie             19.3              12                18.3 
+ 8 Northeast     Thrill             56.2              50                23.1 
+ 9 South         Extreme           125.              110.               52.0 
+10 South         Family             27.4              17                22.1 
+11 South         Kiddie             27                 8                48.0 
+12 South         Thrill             54.2              49.3              20.5 
+13 West          Extreme           123.              109.               61.6 
+14 West          Family             30.1              26                24.4 
+15 West          Kiddie             12.4              11                 3.32
+16 West          Thrill             60.7              53.5              19.3 
+   IQR_max_height mean_number_of_inversions median_number_of_inversions
+            &lt;dbl&gt;                     &lt;dbl&gt;                       &lt;dbl&gt;
+ 1           67                        1.90                           1
+ 2           15.4                      0                              0
+ 3            1                        0                              0
+ 4           32.1                      0                              0
+ 5           44.5                      2.23                           2
+ 6           18                        0                              0
+ 7            5                        0                              0
+ 8           21.3                      0                              0
+ 9           55                        2.27                           2
+10           24.4                      0                              0
+11            0                        0                              0
+12           26.6                      0                              0
+13           60                        2.26                           2
+14           28.7                      0                              0
+15            3.6                      0                              0
+16           22.8                      0                              0
+   std_dev_number_of_inversions IQR_number_of_inversions
+                          &lt;dbl&gt;                    &lt;dbl&gt;
+ 1                         2.09                     4   
+ 2                         0                        0   
+ 3                         0                        0   
+ 4                         0                        0   
+ 5                         2.29                     3.75
+ 6                         0                        0   
+ 7                         0                        0   
+ 8                         0                        0   
+ 9                         2.19                     4   
+10                         0                        0   
+11                         0                        0   
+12                         0                        0   
+13                         2.11                     3.75
+14                         0                        0   
+15                         0                        0   
+16                         0                        0   </code></pre>
+</div>
+</div>
+<p>This demonstrates that while the <code>Midwest</code> region appears to value <code>max_height</code> more than the other regions, the other regions appear to value <code>number_of_inversions</code> more than <code>Midwest</code>. Note there appears to be a correlation between the factor <code>Extreme</code> and <code>number_of_inversions</code>, as might be expected.</p>
+<ol start="4" type="1">
+<li>Next we craft a correlation matrix among all <span class="math inline">\(9\)</span> numeric variables.</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>numeric_data <span class="ot">&lt;-</span> roller_coaster[, <span class="fu">sapply</span>(roller_coaster, is.numeric)] <span class="co"># returns just the portion of the data that is numeric</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(numeric_data, <span class="at">use =</span> <span class="st">"complete.obs"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                     year_opened   top_speed  max_height        drop
+year_opened           1.00000000  0.07523024  0.17444865  0.14880229
+top_speed             0.07523024  1.00000000  0.89958035  0.91065440
+max_height            0.17444865  0.89958035  1.00000000  0.95883038
+drop                  0.14880229  0.91065440  0.95883038  1.00000000
+length               -0.05230856  0.72958067  0.60634255  0.64206458
+duration              0.01910470  0.33969411  0.26660184  0.26653819
+number_of_inversions  0.16157407  0.33770901  0.31021683  0.29579170
+latitude             -0.17756950 -0.03996281 -0.03385612 -0.01236978
+longitude            -0.01615364 -0.01022347 -0.01197198  0.01322657
+                          length    duration number_of_inversions    latitude
+year_opened          -0.05230856  0.01910470           0.16157407 -0.17756950
+top_speed             0.72958067  0.33969411           0.33770901 -0.03996281
+max_height            0.60634255  0.26660184           0.31021683 -0.03385612
+drop                  0.64206458  0.26653819           0.29579170 -0.01236978
+length                1.00000000  0.50693203           0.19466332 -0.06284771
+duration              0.50693203  1.00000000           0.10949861 -0.20229813
+number_of_inversions  0.19466332  0.10949861           1.00000000 -0.05710304
+latitude             -0.06284771 -0.20229813          -0.05710304  1.00000000
+longitude             0.03497609 -0.06589117          -0.02087618  0.19340356
+                       longitude
+year_opened          -0.01615364
+top_speed            -0.01022347
+max_height           -0.01197198
+drop                  0.01322657
+length                0.03497609
+duration             -0.06589117
+number_of_inversions -0.02087618
+latitude              0.19340356
+longitude             1.00000000</code></pre>
+</div>
+</div>
+<p>The strongest correlations appear between the <code>top_speed</code>, <code>max_height</code>, <code>drop</code>, and <code>length</code>, which from a physics standpoint makes sense, whereas the weakest correlations appear with the <code>latitude</code> and <code>longitude</code> variables. That makes sense because location should not have much impact on the other variables, and vice-versa.</p>
+<ol start="5" type="1">
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+</ol>
 
 
 </section>
