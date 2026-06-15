@@ -3,6 +3,9 @@ title: "Homework 4"
 format: html
 editor_options: 
   chunk_output_type: console
+execute:
+  warning: false
+  message: false
 ---
 
 #  Preamble
@@ -68,3 +71,98 @@ Finally, let us query, within the past week, on the "NBA".
 ```{r hw_4_task_1_response_3_part_3}
 news_search("NBA", "2026-06-08")
 ```
+
+# Task 2: Summarizing Roller Coaster Data
+For this task, we use the data located [here](https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv).
+
+## Read In and Convert to Factors
+First we read in the data, amending the column names to standard format.
+
+```{r hw_4_task_2_response_01_part_1}
+columns <- c("coaster", "park", "city", "state", "census_region",
+             "year_opened", "age_group", "top_speed", "max_height", "scale",
+             "type", "design", "drop", "length", "duration",
+             "inversions", "number_of_inversions", "make", "latitude", "longitude",
+             "boundary")
+
+roller_coaster <- read_csv("https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv",
+                  col_names = columns,
+                  show_col_types = FALSE,
+                  skip = 1,
+  )
+```
+
+Then convert the appropriate variables (columns), viz., `census_region`, `age_group`, `scale`, `type`, and `design`, to factors; and convert an additional column, `inversions`, to `logi`.
+
+```{r hw_4_task_2_response_01_part_2}
+roller_coaster <- roller_coaster |>
+  mutate(across(c(census_region, age_group, scale, type, design),
+                as.factor))
+
+for(i in 1:length(roller_coaster$inversions)){
+  roller_coaster$inversions[i] <- ifelse(roller_coaster$inversions[i] == "Yes",
+                                        "True",
+                                        "False")
+}
+
+roller_coaster$inversions <- as.logical(roller_coaster$inversions)
+
+str(roller_coaster)
+```
+
+Now we examine the data for missing values.
+
+```{r hw_4_task_2_response_01_part_3}
+summary(roller_coaster)
+```
+
+Of the $9$ numeric variables, $5$ have missing values: `top_speed`, `max_height`, `drop`, `length`, and `duration`. None of the `char` or `factor` variables appear to have missing values.
+
+## Categorical Variables
+Now we examine a few comparative tables and plots for the categorical data.
+
+* First we create a one-way, two-way, and three-way contingency table in base `R` for the `factor` variables `census_region`, `scale`, and `age_group`, respectively.
+
+```{r hw_4_task_2_response_02}
+table(roller_coaster$census_region) |>
+  addmargins()  # includes totals across rows, columns, and table levels
+
+table(roller_coaster$census_region, roller_coaster$scale) |>
+  addmargins()
+
+three_way <- table(roller_coaster$census_region, roller_coaster$scale,
+                   roller_coaster$age_group) |>
+  addmargins()
+```
+
+  - In the first table, we observe the `South` has the most roller coasters according to this data set, at $223$.
+
+  - In the second table, we observe that of the $160$ total `Thrill` roller coasters, the fewest occurs in the `West`, at $32$.
+
+  - In the last table, we notice there aren't any (i.e., $0$) `Older` roller coasters in the `West` with a `Family` classification. Of the `Newest` roller coasters, the fewest occurs in the `Northeast` with `Kiddie` as `scale`.
+    
+* Next we create a conditional two-way table on the `Newest` roller coasters for `scale` and `census_region`.
+
+```{r hw_4_task_2_response_03_part_1}
+roller_coaster |>
+  filter(age_group == "3:Newest") |>
+  select(census_region, scale) |>
+  table() |>
+  addmargins()
+```
+
+Then we repeat this process by subsetting our previous three-way table.
+
+```{r hw_4_task_2_response_03_part_2}
+three_way[, , "3:Newest"]
+```
+
+* Then we create a two-way contingency table using `group_by` and `summarize` and `pivot_wider` to mimic the output of `table`.
+
+```{r hw_4_task_2_response_04}
+roller_coaster |>
+  group_by(census_region, scale) |>
+  summarize(count = n()) |>
+  pivot_wider(names_from = scale, values_from = count)
+```
+
