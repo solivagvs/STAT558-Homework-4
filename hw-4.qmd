@@ -3,3 +3,206 @@ title: "Homework 4"
 format: html
 ---
 
+### Task 1 - Querying an API and a Tidy-Style Function
+
+Connect to the news API website at newsapi.org. After getting the API key, using the httr package return information about Iran within the last 30 days. I chose 5/25/2026 as this day would work even after the assignment is due.
+
+```{r}
+# Load necessary libraries
+library(httr)
+library(tidyverse)
+library(jsonlite)
+
+# Use GET() from the httr package to return information about 'Iran' from the last 30 days.
+
+news <- GET("https://newsapi.org/v2/everything?q=Iran&from=2026-05-25&language=en&pageSize=50&apiKey=3bccd48e62cc47959a971ae2146ee001")
+news
+
+# Parsing the Data
+# Parse what is returned and find your way to the data frame that has the actual article information in 
+# it (check content). Note the first column should be a list column!
+# The first column in the resulting articles data frame is a list column containing source details.
+parsed_data <- fromJSON(rawToChar(news$content))
+news_df <- as_tibble(parsed_data$articles)
+
+# Display the structure to verify the list column
+str(news_df)
+
+# Creating a Tidy-Style Function
+# write a quick function that allows the user to easily query this API. The inputs to the function 
+# should be the title/subject to search for (string), a time period to search from (string - you’ll search 
+# from that time until the present), and an API key.
+get_news_data <- function(subject, start_date = "2026-05-25", api_key = "3bccd48e62cc47959a971ae2146ee001") {
+  url <- paste0("https://newsapi.org/v2/everything?q=", subject, 
+                "&from=", start_date, 
+                "&language=en&pageSize=50&apiKey=", api_key)
+  
+  req <- GET(url)
+  parsed <- fromJSON(rawToChar(req$content))
+  return(as_tibble(parsed$articles))
+}
+
+# Demonstrating the function twice to show it works.
+# let us query on the NBA 
+NBA_news <- get_news_data("NBA", "2026-06-05")
+# let us query on hockey
+hockey_news <- get_news_data("hockey", "2026-06-08")
+
+head(NBA_news)
+head(hockey_news)
+```
+
+
+### Task 2 - Summarizing Roller Coaster Data
+
+Using data about roller coasters. The data is about different aspects of roller coasters. 
+```{r}
+library(tidyverse)
+
+# Read in the roller coaster data
+columns <- c("coaster", "park", "city", "state", "census_region",
+             "year_opened", "age_group", "top_speed", "max_height", "scale",
+             "type", "design", "drop", "length", "duration",
+             "inversions", "number_of_inversions", "make", "latitude", "longitude",
+             "boundary")
+
+roller_coaster <- read_csv("https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv",
+                  col_names = columns,
+                  show_col_types = FALSE,
+                  skip = 1,
+)
+```
+
+```{r}
+# Read in the roller coaster data
+roller_coaster <- roller_coaster |>
+  mutate(across(c(census_region, age_group, scale, type, design), as.factor), inversions = inversions == "Yes")
+
+#Understand how your data is stored and check the structure
+str(roller_coaster)
+
+#Check that the min's, max's,
+psych::describe(roller_coaster)
+
+
+#Conditional One-Way Table
+table_1way <- table(roller_coaster$type)
+print(table_1way)
+
+# Two-way contingency table
+table_2way <- table(roller_coaster$type, roller_coaster$scale)
+print(table_2way)
+
+# Three-way contingency table
+table_3way <- table(roller_coaster$type, roller_coaster$scale, roller_coaster$design)
+print(table_3way)
+
+# Conditional Two-Way Table: Method 1 (Subsetting data with filter) [cite: 61]
+cond_tab1 <- table(filter(coaster_data, Design == "Sit Down")$Scale, 
+                   filter(coaster_data, Design == "Sit Down")$Type)
+
+# Conditional Two-Way Table: Method 2 (Subsetting a 3-way table) [cite: 61]
+tab3_design <- table(coaster_data$Scale, coaster_data$Type, coaster_data$Design)
+cond_tab2 <- tab3_design[, , "Sit Down"]
+
+# dplyr 2-way table
+dplyr_tab <- coaster_data %>%
+  group_by(Scale, Type) %>%
+  summarize(count = n(), .groups = 'drop') %>%
+  pivot_wider(names_from = Type, values_from = count, values_fill = 0)
+print(dplyr_tab)
+
+# Stacked Bar Graph 
+ggplot(coaster_data, aes(x = Scale, fill = Type)) +
+  geom_bar(position = "stack") +
+  labs(title = "Proportion of Coaster Types by Scale", x = "Coaster Scale", y = "Count") # [cite: 65]
+
+# Side-by-Side Bar Graph 
+ggplot(coaster_data, aes(x = Scale, fill = Type)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Comparison of Coaster Types by Scale", x = "Coaster Scale", y = "Count") # [cite: 65]
+
+# Center and spread for two numeric variables 
+coaster_data %>%
+  summarize(
+    Mean_Speed = mean(TopSpeed, na.rm = TRUE),
+    SD_Speed = sd(TopSpeed, na.rm = TRUE),
+    Mean_Height = mean(MaxHeight, na.rm = TRUE),
+    SD_Height = sd(MaxHeight, na.rm = TRUE)
+  )
+
+# Subsetting data (Looking only at 'Extreme' scale coasters) [cite: 69]
+coaster_data %>%
+  filter(Scale == "Extreme") %>%
+  summarize(
+    Mean_Speed = mean(TopSpeed, na.rm = TRUE),
+    SD_Speed = sd(TopSpeed, na.rm = TRUE),
+    Mean_Height = mean(MaxHeight, na.rm = TRUE),
+    SD_Height = sd(MaxHeight, na.rm = TRUE)
+  )
+
+# Grouping by a single variable (Type) [cite: 70]
+coaster_data %>%
+  group_by(Type) %>%
+  summarize(
+    Mean_Speed = mean(TopSpeed, na.rm = TRUE),
+    SD_Speed = sd(TopSpeed, na.rm = TRUE),
+    Mean_Height = mean(MaxHeight, na.rm = TRUE),
+    SD_Height = sd(MaxHeight, na.rm = TRUE)
+  )
+
+# Grouping by two variables (Type and Scale) [cite: 70]
+coaster_data %>%
+  group_by(Type, Scale) %>%
+  summarize(
+    Mean_Speed = mean(TopSpeed, na.rm = TRUE),
+    SD_Speed = sd(TopSpeed, na.rm = TRUE),
+    Mean_Height = mean(MaxHeight, na.rm = TRUE),
+    SD_Height = sd(MaxHeight, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+# Correlation matrix between all numeric variables [cite: 70]
+coaster_data %>%
+  select(where(is.numeric)) %>%
+  cor(use = "complete.obs")
+
+
+# Histogram 
+ggplot(coaster_data, aes(x = TopSpeed, fill = Type)) +
+  geom_histogram(alpha = 0.5, position = "identity", bins = 30) +
+  labs(title = "Histogram of Top Speed by Coaster Type", x = "Top Speed (mph)", y = "Frequency") # [cite: 72]
+
+# Kernel Density Plot 
+ggplot(coaster_data, aes(x = TopSpeed, color = Type, fill = Type)) +
+  geom_density(alpha = 0.3) +
+  labs(title = "Density Plot of Top Speed by Coaster Type", x = "Top Speed (mph)", y = "Density") # [cite: 72]
+
+# Boxplot 
+ggplot(coaster_data, aes(x = Type, y = TopSpeed, fill = Type)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Top Speed by Coaster Type", x = "Coaster Type", y = "Top Speed (mph)")
+
+
+# Scatterplot 1: Colored by a categorical variable 
+ggplot(coaster_data, aes(x = Drop, y = TopSpeed, color = Type)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Top Speed vs. Drop Colored by Type", x = "Drop (feet)", y = "Top Speed (mph)") # [cite: 74]
+
+# Scatterplot 2: Colored by a different categorical variable 
+ggplot(coaster_data, aes(x = Length, y = Duration, color = Scale)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Duration vs. Length Colored by Scale", x = "Length (feet)", y = "Duration (seconds)") # [cite: 74]
+
+# Scatterplot faceted by one categorical variable [cite: 75]
+ggplot(coaster_data, aes(x = Drop, y = TopSpeed)) +
+  geom_point(alpha = 0.6) +
+  facet_wrap(~ Type) +
+  labs(title = "Top Speed vs. Drop Faceted by Type", x = "Drop (feet)", y = "Top Speed (mph)")
+
+# Scatterplot faceted by a combination of two categorical variables [cite: 76]
+ggplot(coaster_data, aes(x = Drop, y = TopSpeed)) +
+  geom_point(alpha = 0.6) +
+  facet_grid(Scale ~ Type) +
+  labs(title = "Top Speed vs. Drop Faceted by Scale and Type", x = "Drop (feet)", y = "Top Speed (mph)")
+```
