@@ -52,10 +52,10 @@ head(NBA_news)
 head(hockey_news)
 ```
 
-
 ### Task 2 - Summarizing Roller Coaster Data
 
-Using data about roller coasters. The data is about different aspects of roller coasters. 
+Using data about roller coasters. The data is about different aspects of roller coasters.
+
 ```{r}
 library(tidyverse)
 
@@ -73,8 +73,10 @@ roller_coaster <- read_csv("https://www4.stat.ncsu.edu/online/datasets/635USroll
 )
 ```
 
+## Conduct Basic EDA
+
 ```{r}
-# Read in the roller coaster data
+# Convert the columns census_region, age_group, scale, type and design to factors and convert inversions to logi. 
 roller_coaster <- roller_coaster |>
   mutate(across(c(census_region, age_group, scale, type, design), as.factor), inversions = inversions == "Yes")
 
@@ -82,127 +84,190 @@ roller_coaster <- roller_coaster |>
 str(roller_coaster)
 
 #Check that the min's, max's,
-psych::describe(roller_coaster)
+psych::describe(roller_coaster |> select(where(is.numeric)))
 
+# Determine the rate of missing values
+sum_na <- function(column){
+  sum(is.na(column))
+}
 
+na_counts <- roller_coaster |>
+  summarize(across(everything(), sum_na))
+
+print(na_counts)
+```
+
+Looking at the output from str() we can see our data structure is a tibble with 635 observations and 21 variables. There were 9 numerical variables and of those 9, 5 of the variables had missing variables. The categorical and logical variables had no missing variables. top_speed had 74 missing values, max_height had 8 missing values, drop had 128 missing values, length had 33 missing values, and duration had 66 missing values.
+
+In this next section we are creating a one-way contigency table, two-way contingency table, and three-way contigency table for some of the factor variables that we created above. We will be using the table() function to accomplish this.
+
+```{r}
 #Conditional One-Way Table
 table_1way <- table(roller_coaster$type)
 print(table_1way)
 
 # Two-way contingency table
-table_2way <- table(roller_coaster$type, roller_coaster$scale)
+table_2way <- table(roller_coaster$type, roller_coaster$age_group)
 print(table_2way)
 
 # Three-way contingency table
-table_3way <- table(roller_coaster$type, roller_coaster$scale, roller_coaster$design)
+table_3way <- table(roller_coaster$type, roller_coaster$age_group, roller_coaster$census_region)
 print(table_3way)
 
-# Conditional Two-Way Table: Method 1 (Subsetting data with filter) [cite: 61]
-cond_tab1 <- table(filter(coaster_data, Design == "Sit Down")$Scale, 
-                   filter(coaster_data, Design == "Sit Down")$Type)
+```
 
-# Conditional Two-Way Table: Method 2 (Subsetting a 3-way table) [cite: 61]
-tab3_design <- table(coaster_data$Scale, coaster_data$Type, coaster_data$Design)
-cond_tab2 <- tab3_design[, , "Sit Down"]
+One-Way Table: There are more steel coasters than wood coasters in the dataset. Two-Way Table: The wood coasters has even distribution among the age_groups in the dataset compared to the steel coasters which is skewed towards recent/new. Three-Way Table: The midwest region has the most coasters both steel and wood. Might be due to the number of parks in the midwest?
+
+```{r}
+#In this next part, we will be creating a conditional two-way table using table(). Condition on one variable's setting and create a two-way table. 
+# Conditional Two-Way Table: Method 1 (Filtering without using 'with')
+midwest_coasters <- roller_coaster |> 
+  filter(census_region == "Midwest")
+
+cond_tab1 <- table(midwest_coasters$type, midwest_coasters$age_group)
+print(cond_tab1)
+
+# Conditional Two-Way Table: Method 2 (Subsetting a 3-way table)
+table_3way <- table(roller_coaster$type, roller_coaster$age_group, roller_coaster$census_region)
+cond_tab2 <- table_3way[, , "Midwest"]
+cond_tab2
 
 # dplyr 2-way table
-dplyr_tab <- coaster_data %>%
-  group_by(Scale, Type) %>%
-  summarize(count = n(), .groups = 'drop') %>%
-  pivot_wider(names_from = Type, values_from = count, values_fill = 0)
+dplyr_tab <- roller_coaster |>
+  drop_na(type, age_group) |>
+  group_by(type, age_group) |>
+  summarize(count = n()) |>
+  pivot_wider(names_from = type, values_from = count)
 print(dplyr_tab)
 
 # Stacked Bar Graph 
-ggplot(coaster_data, aes(x = Scale, fill = Type)) +
+ggplot(roller_coaster, aes(x = type, fill = age_group)) +
   geom_bar(position = "stack") +
-  labs(title = "Proportion of Coaster Types by Scale", x = "Coaster Scale", y = "Count") # [cite: 65]
+  labs(title = "Proportion of Coaster Type by Age Group", x = "Coaster Type", y = "Count") 
 
 # Side-by-Side Bar Graph 
-ggplot(coaster_data, aes(x = Scale, fill = Type)) +
+ggplot(roller_coaster, aes(x = type, fill = age_group)) +
   geom_bar(position = "dodge") +
-  labs(title = "Comparison of Coaster Types by Scale", x = "Coaster Scale", y = "Count") # [cite: 65]
+  labs(title = "Comparison of Coaster Types by Age Group", x = "Coaster Type", y = "Count")
+```
 
+**Conditional Two-Way Tables Discussion:** By conditioning on the `census_region` variable, these tables isolate only the roller coasters located in the Midwest. Looking at the output, the highest concentration of coasters in this region are **Steel** coasters in the **3:Newest** age group, with exactly **58** coasters.
+
+**Dplyr Two-Way Table Discussion:** Unlike the conditional tables, our `dplyr` pivot table looks at the entire country. We can see that nationwide, the **2:Recent** era saw a massive boom in construction, peaking at **155** Steel coasters and **35** Wooden coasters. If we compare the recent steel coasters to our conditional table, we can see that 45 out of those 190 recent steel coasters (about 24%) reside in the Midwest!
+
+**Bar Graphs Discussion:** The bar graphs provide a visual representation of the relationship between coaster `type` and `age_group` across the entire dataset. The stacked bar graph clearly illustrates that Steel coasters outnumbers Wood coasters overall.
+
+The side-by-side bar graph is good because it makes it easy to compare the absolute raw counts of the age groups directly against each other within their types. For instance, it clearly highlights the "2:Recent" boom for steel coasters. However, it also visually emphasizes that older coasters make up a much larger relative proportion of all surviving wooden coasters.
+
+## Numeric variables (and across groups)
+
+```{r}
 # Center and spread for two numeric variables 
-coaster_data %>%
+roller_coaster |>
   summarize(
-    Mean_Speed = mean(TopSpeed, na.rm = TRUE),
-    SD_Speed = sd(TopSpeed, na.rm = TRUE),
-    Mean_Height = mean(MaxHeight, na.rm = TRUE),
-    SD_Height = sd(MaxHeight, na.rm = TRUE)
+    Mean_Speed = mean(top_speed, na.rm = TRUE),
+    SD_Speed = sd(top_speed, na.rm = TRUE),
+    Mean_Height = mean(max_height, na.rm = TRUE),
+    SD_Height = sd(max_height, na.rm = TRUE)
   )
 
-# Subsetting data (Looking only at 'Extreme' scale coasters) [cite: 69]
-coaster_data %>%
-  filter(Scale == "Extreme") %>%
+# Subsetting data (Looking only at 'steel' scale coasters) 
+roller_coaster |>
+  filter(type == "Steel") |>
   summarize(
-    Mean_Speed = mean(TopSpeed, na.rm = TRUE),
-    SD_Speed = sd(TopSpeed, na.rm = TRUE),
-    Mean_Height = mean(MaxHeight, na.rm = TRUE),
-    SD_Height = sd(MaxHeight, na.rm = TRUE)
+    Mean_Speed = mean(top_speed, na.rm = TRUE),
+    SD_Speed = sd(top_speed, na.rm = TRUE),
+    Mean_Height = mean(max_height, na.rm = TRUE),
+    SD_Height = sd(max_height, na.rm = TRUE)
   )
 
-# Grouping by a single variable (Type) [cite: 70]
-coaster_data %>%
-  group_by(Type) %>%
+# Grouping by a single variable (Type)
+roller_coaster |>
+  group_by(type) |>
+  drop_na(type) |>
   summarize(
-    Mean_Speed = mean(TopSpeed, na.rm = TRUE),
-    SD_Speed = sd(TopSpeed, na.rm = TRUE),
-    Mean_Height = mean(MaxHeight, na.rm = TRUE),
-    SD_Height = sd(MaxHeight, na.rm = TRUE)
+    Mean_Speed = mean(top_speed, na.rm = TRUE),
+    SD_Speed = sd(top_speed, na.rm = TRUE),
+    Mean_Height = mean(max_height, na.rm = TRUE),
+    SD_Height = sd(max_height, na.rm = TRUE)
   )
 
-# Grouping by two variables (Type and Scale) [cite: 70]
-coaster_data %>%
-  group_by(Type, Scale) %>%
+# Grouping by two variables (Type and age group)
+roller_coaster |>
+  group_by(type, age_group) |>
+  drop_na(type, age_group) |>
   summarize(
-    Mean_Speed = mean(TopSpeed, na.rm = TRUE),
-    SD_Speed = sd(TopSpeed, na.rm = TRUE),
-    Mean_Height = mean(MaxHeight, na.rm = TRUE),
-    SD_Height = sd(MaxHeight, na.rm = TRUE),
-    .groups = 'drop'
+    Mean_Speed = mean(top_speed, na.rm = TRUE),
+    SD_Speed = sd(top_speed, na.rm = TRUE),
+    Mean_Height = mean(max_height, na.rm = TRUE),
+    SD_Height = sd(max_height, na.rm = TRUE)
   )
 
-# Correlation matrix between all numeric variables [cite: 70]
-coaster_data %>%
-  select(where(is.numeric)) %>%
+# Correlation matrix between all numeric variables
+roller_coaster |>
+  select(where(is.numeric)) |>
   cor(use = "complete.obs")
 
 
 # Histogram 
-ggplot(coaster_data, aes(x = TopSpeed, fill = Type)) +
+ggplot(roller_coaster, aes(x = top_speed, fill = type)) +
   geom_histogram(alpha = 0.5, position = "identity", bins = 30) +
-  labs(title = "Histogram of Top Speed by Coaster Type", x = "Top Speed (mph)", y = "Frequency") # [cite: 72]
+  labs(title = "Histogram of Top Speed by Coaster Type", x = "Top Speed (mph)", y = "Frequency") 
 
 # Kernel Density Plot 
-ggplot(coaster_data, aes(x = TopSpeed, color = Type, fill = Type)) +
+ggplot(roller_coaster, aes(x = top_speed, color = type, fill = type)) +
   geom_density(alpha = 0.3) +
-  labs(title = "Density Plot of Top Speed by Coaster Type", x = "Top Speed (mph)", y = "Density") # [cite: 72]
+  labs(title = "Density Plot of Top Speed by Coaster Type", x = "Top Speed (mph)", y = "Density") 
 
 # Boxplot 
-ggplot(coaster_data, aes(x = Type, y = TopSpeed, fill = Type)) +
+ggplot(roller_coaster, aes(x = type, y = top_speed, fill = type)) +
   geom_boxplot() +
   labs(title = "Boxplot of Top Speed by Coaster Type", x = "Coaster Type", y = "Top Speed (mph)")
 
 
 # Scatterplot 1: Colored by a categorical variable 
-ggplot(coaster_data, aes(x = Drop, y = TopSpeed, color = Type)) +
+ggplot(roller_coaster, aes(x = drop, y = top_speed, color = type)) +
   geom_point(alpha = 0.7) +
-  labs(title = "Top Speed vs. Drop Colored by Type", x = "Drop (feet)", y = "Top Speed (mph)") # [cite: 74]
+  labs(title = "Top Speed vs. Drop Colored by Type", x = "Drop (feet)", y = "Top Speed (mph)")
 
 # Scatterplot 2: Colored by a different categorical variable 
-ggplot(coaster_data, aes(x = Length, y = Duration, color = Scale)) +
+ggplot(roller_coaster, aes(x = length, y = duration, color = age_group)) +
   geom_point(alpha = 0.7) +
-  labs(title = "Duration vs. Length Colored by Scale", x = "Length (feet)", y = "Duration (seconds)") # [cite: 74]
+  labs(title = "Duration vs. Length Colored by Age Group", x = "Length (feet)", y = "Duration (seconds)") 
 
-# Scatterplot faceted by one categorical variable [cite: 75]
-ggplot(coaster_data, aes(x = Drop, y = TopSpeed)) +
+# Scatterplot faceted by one categorical variable
+ggplot(roller_coaster, aes(x = drop, y = top_speed, color = type)) +
   geom_point(alpha = 0.6) +
-  facet_wrap(~ Type) +
+  facet_wrap(~ type) +
   labs(title = "Top Speed vs. Drop Faceted by Type", x = "Drop (feet)", y = "Top Speed (mph)")
 
-# Scatterplot faceted by a combination of two categorical variables [cite: 76]
-ggplot(coaster_data, aes(x = Drop, y = TopSpeed)) +
+# Scatterplot faceted by a combination of two categorical variables
+ggplot(roller_coaster, aes(x = drop, y = top_speed, color = age_group)) +
   geom_point(alpha = 0.6) +
-  facet_grid(Scale ~ Type) +
-  labs(title = "Top Speed vs. Drop Faceted by Scale and Type", x = "Drop (feet)", y = "Top Speed (mph)")
+  facet_grid(age_group ~ type) +
+  labs(title = "Top Speed vs. Drop Faceted by Age Group and Type", x = "Drop (feet)", y = "Top Speed (mph)")
 ```
+
+**Discussion of Numeric Summaries:**
+Evaluating the overall center and spread, the average top speed of a US roller coaster is **42.24 mph** with a standard deviation of **19.37 mph**, while the average maximum height is **76.8 feet** (with a large spread of **61.51** **feet**).
+
+When we subset the data to look exclusively at **Steel** coasters, we find that both the mean speed (**40.69 mph**) and mean height (**75.77 feet**) are lower than the dataset as a whole. This is further clarified when grouping across the single variable `type`; Steel coasters possess lower averages and significantly greater standard deviations than Wood coasters (which average 49.33 mph and 81.96 feet in height with a much smaller spread). This shows that steel technology allows for smaller, slower, and more varied designs.
+
+For both steel and wooden coasters, the maximum height and top speed have notably increased as we move from **1:Older** to **2:Recent** confirming that modern roller coaster engineering consistently pushes boundaries. From **2:Recent** to **3:Newest** for wood coasters the mean_height increases whereas speed stays relatively the same. For steel coasters, the mean_speed lowers and the mean_height also decreases which is interesting.
+
+The correlation matrix allows us to examine the linear relationship between all numeric variables simultaneously. The most prominent finding is the exceptionally strong positive correlation between `top_speed`, `max_height`, and `drop`. For instance, `drop` and `max_height` have a correlation of **0.959**, and `drop` and `top_speed` sit at **0.911**.
+
+**Discussion of Distribution Plots:**
+By overlaying the distributions of `top_speed` across coaster `type` without faceting, we can directly compare the profiles of Steel and Wood coasters.
+
+The **kernel density plot** and **histogram** reveal that the distribution for wooden coasters is relatively symmetric and tightly clustered around the 50 mph mark. In contrast, steel coasters exhibit a much wider distribution with a long tail extending rightward toward extremely high speeds.
+
+The **boxplot** highlights this long tail seen in steel coasters. While the median speeds aren't drastically far apart, the steel boxplot shows multiple extreme upper outliers stretching past 100 mph, representing the very fast and big coasters that achieve speeds completely unattainable by traditional wooden roller coasters.
+
+**Discussion of Scatterplots:**
+Our first scatterplot showcases a tight, positive linear relationship between `drop` and `top_speed`. Coloring the points by `type` shows a distinct separation: wooden coasters are clustered tightly at the lower left (shorter drops, slower speeds), while steel coasters dominate the upper right, accounting for almost all drops over 150 feet. The second scatterplot shows that track `length` and `duration` also have a positive trend, and coloring by `age_group` illustrates that older coasters tend to be clustered closer to the bottom left compared to modern ones.
+
+**Discussion of Faceted Scatterplots:**
+Looking at the scatterplot relating `top_speed` and `drop` faceted by `type`, the separation in engineering limits shows through. While both materials show the exact same strong positive linear relationship, the **Wood** facet abruptly truncates around a 150-foot drop and 75 mph. The **Steel** facet continues stretching far into the upper right corner, visually proving that steel support structures are required to achieve extreme heights and speeds.
+
+Finally, the scatterplot faceted by both `age_group` and `type` provides a historical timeline of roller coaster engineering. In the **1:Older** panel, steel and wood coasters had very similar performance profiles tightly clustered in the bottom left. As we look across to the **2:Recent** and **3:Newest** panels, the **Steel** category moves outward with extreme upper-right outliers. This illustrates the modern coaster technology where recent advancements in steel engineering have pushed drop heights and top speeds to levels unimaginable in the older coasters!
