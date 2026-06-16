@@ -275,10 +275,103 @@ cor(numeric_data, use = "complete.obs")
 
 The strongest correlations appear between the `top_speed`, `max_height`, `drop`, and `length`, which from a physics standpoint makes sense, whereas the weakest correlations appear with the `latitude` and `longitude` variables. That makes sense because location should not have much impact on the other variables, and vice-versa.
 
-5. 
+5. Next we create some graphs for the quantitative data.
+  * We start with a histogram, here for `max_height` on the categorical variable `scale`.
 
-6. 
+```{r hw_4_task_2_response_10_part_1}
+plot <- ggplot(roller_coaster |> drop_na(),
+               aes(x = max_height, fill = scale)) +
+  labs(x = "Maximum Height",
+       y = "Count",
+       title = "Height by Scale of Rollercoaster")
 
-7. 
+plot + geom_histogram() + labs(subtitle = "Histogram")
+```
 
-8. 
+  This histogram demonstrates the `Extreme` scale tends to have greater `maximum_height` and `Kiddie` tends to have less, as expected.
+
+ * Next we examine a (kernel) density plot for the same.
+ 
+```{r hw_4_task_2_response_10_part_2}
+plot + geom_density(alpha = 0.5) + labs(subtitle = "Density Plot")
+```
+
+  This reinforces the conclusion from the previous graph, although due to the opacity we can more easily see that the `Kiddie` tends less towards heights; `Family` is bimodal, likely for those who just want to enjoy the ride and those who want a more exciting experience; `Thrill` seems to be the go-between for `Kiddie` and `Extreme`, a sort of "average" roller coaster experience.
+
+  * Then, we use a boxplot to compare the `top_speed` across `scale`.
+  
+```{r hw_4_task_2_response_10_part_3}
+ggplot(roller_coaster |> drop_na(),
+       aes(x = top_speed, fill = scale)) +
+  labs(x = "Top Speed",
+       title = "Top Speed by Scale of Rollercoaster",
+       subtitle = "Boxplots") +
+  geom_boxplot() +
+  theme( # no y-axis information is needed
+    axis.title.y = element_blank(), # Removes "mpg" text
+    axis.text.y  = element_blank(), # Removes numbers/labels
+    axis.ticks.y = element_blank()  # Removes tick lines
+  )
+```
+
+  As expected, the `Kiddie` category seems to be the most consistent, with the most centered data and the least spread.  
+
+6. Now we create two scatterplots.
+
+  - The first will relate `top_speed` and `max_height` by `scale`.
+  
+```{r hw_4_task_2_response_11_part_1}
+ggplot(roller_coaster |> drop_na(),
+       aes(x = top_speed, y = max_height)) +
+  labs(x = "Top Speed",
+       y = "Maximum Height",
+       title = "Top Speed v Height by Scale of Rollercoaster",
+       subtitle = "Scatter Plot") +
+  geom_point(aes(color = scale))
+```
+
+  We would think the `Kiddie` and `Family` rides would tend lower in `max_height` and `top_speed` with the `Thrill` and `Extreme` tending higher, and this scatter-plot affirms that. Moreover, there appears to be a quadratic relationship between speed and height.
+  
+  - Now we examine the height with the year the roller coaster was constructed, again across the `scale` variable.
+  
+```{r hw_4_task_2_response_11_part_2}
+ggplot(roller_coaster |> drop_na(),
+       aes(x = year_opened, y = max_height)) +
+  labs(x = "Year Opened",
+       y = "Maximum Height",
+       title = "Year v Height by Scale of Rollercoaster",
+       subtitle = "Scatter Plot") +
+  geom_point(aes(color = scale))
+```
+
+  This graph confirms that as time went by and technology improved, so did the heights of the roller coasters, with `Kiddie` scale being thought of later and `Extreme` considered more as Boomers approached adulthood.
+
+7. Next, we use faceting to examine how `design` impacted `max_height` and `top_speed`.
+
+```{r hw_4_task_2_response_12}
+ggplot(roller_coaster |> drop_na(),
+       aes(x = top_speed, y = max_height)) +
+  labs(x = "Top Speed",
+       y = "Maximum Height",
+       title = "Speed v Height by Design of Rollercoaster",
+       subtitle = "Scatter Plot") +
+  geom_point() +
+  facet_grid(~ design)
+```
+
+The most common type of roller coaster is a `Sit Down` `design`, explaining why most of the data is in this `factor` level, and this also demonstrates that the faster and taller roller coaster tend to be more traditionally designed since the specialized roller coasters have lower speed and heights, comparatively.
+
+8. Finally, we use faceting to examine how `scale` and `age_group` (of the roller coaster) impacts the `top_speed` and `number_of_iversions`.
+
+```{r hw_4_task_2_response_13}
+ggplot(roller_coaster |> drop_na(),
+       aes(x = number_of_inversions, y = top_speed)) +
+  labs(x = "Number of Inversions",
+       y = "Top Speed",
+       title = "Inversions v Speed by Age and Scale of Rollercoaster",
+       subtitle = "Scatter Plot") +
+  geom_point(position = position_jitter(width = 0.5)) +
+  facet_grid(age_group ~ scale)
+```
+
+This shows the newer roller coasters exhibit the `Extreme` scale and tend towards higher numbers of inversions and that, perhaps counter-intuitively, the top speed has a modest, if small, effect on the number of inversions.

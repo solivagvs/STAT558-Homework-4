@@ -187,7 +187,7 @@ window.Quarto = {
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>ebola_news</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Response [https://newsapi.org/v2/everything?q=ebola&amp;from=2026-05-15&amp;language=en&amp;pageSize=50&amp;apiKey=e7e98c8f31914c04a5d15115a45ea6e3]
-  Date: 2026-06-15 22:13
+  Date: 2026-06-16 01:09
   Status: 200
   Content-Type: application/json; charset=utf-8
   Size: 41.5 kB</code></pre>
@@ -206,7 +206,7 @@ window.Quarto = {
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 3
  $ status      : chr "ok"
- $ totalResults: int 3311
+ $ totalResults: int 3314
  $ articles    :'data.frame':   50 obs. of  8 variables:
   ..$ source     :'data.frame': 50 obs. of  2 variables:
   .. ..$ id  : chr [1:50] NA NA NA NA ...
@@ -755,11 +755,151 @@ longitude             1.00000000</code></pre>
 </div>
 <p>The strongest correlations appear between the <code>top_speed</code>, <code>max_height</code>, <code>drop</code>, and <code>length</code>, which from a physics standpoint makes sense, whereas the weakest correlations appear with the <code>latitude</code> and <code>longitude</code> variables. That makes sense because location should not have much impact on the other variables, and vice-versa.</p>
 <ol start="5" type="1">
-<li></li>
-<li></li>
-<li></li>
-<li></li>
+<li>Next we create some graphs for the quantitative data.</li>
 </ol>
+<ul>
+<li>We start with a histogram, here for <code>max_height</code> on the categorical variable <code>scale</code>.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(roller_coaster <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(),</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>               <span class="fu">aes</span>(<span class="at">x =</span> max_height, <span class="at">fill =</span> scale)) <span class="sc">+</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Maximum Height"</span>,</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Count"</span>,</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Height by Scale of Rollercoaster"</span>)</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">+</span> <span class="fu">geom_histogram</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="st">"Histogram"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw-4_files/figure-html/hw_4_task_2_response_10_part_1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This histogram demonstrates the <code>Extreme</code> scale tends to have greater <code>maximum_height</code> and <code>Kiddie</code> tends to have less, as expected.</p>
+<ul>
+<li>Next we examine a (kernel) density plot for the same.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="st">"Density Plot"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw-4_files/figure-html/hw_4_task_2_response_10_part_2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This reinforces the conclusion from the previous graph, although due to the opacity we can more easily see that the <code>Kiddie</code> tends less towards heights; <code>Family</code> is bimodal, likely for those who just want to enjoy the ride and those who want a more exciting experience; <code>Thrill</code> seems to be the go-between for <code>Kiddie</code> and <code>Extreme</code>, a sort of “average” roller coaster experience.</p>
+<ul>
+<li>Then, we use a boxplot to compare the <code>top_speed</code> across <code>scale</code>.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(roller_coaster <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(),</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> top_speed, <span class="at">fill =</span> scale)) <span class="sc">+</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Top Speed"</span>,</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Top Speed by Scale of Rollercoaster"</span>,</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Boxplots"</span>) <span class="sc">+</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>( <span class="co"># no y-axis information is needed</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(), <span class="co"># Removes "mpg" text</span></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y  =</span> <span class="fu">element_blank</span>(), <span class="co"># Removes numbers/labels</span></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>()  <span class="co"># Removes tick lines</span></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw-4_files/figure-html/hw_4_task_2_response_10_part_3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>As expected, the <code>Kiddie</code> category seems to be the most consistent, with the most centered data and the least spread.</p>
+<ol start="6" type="1">
+<li>Now we create two scatterplots.</li>
+</ol>
+<ul>
+<li>The first will relate <code>top_speed</code> and <code>max_height</code> by <code>scale</code>.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(roller_coaster <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(),</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> top_speed, <span class="at">y =</span> max_height)) <span class="sc">+</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Top Speed"</span>,</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Maximum Height"</span>,</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Top Speed v Height by Scale of Rollercoaster"</span>,</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Scatter Plot"</span>) <span class="sc">+</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> scale))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw-4_files/figure-html/hw_4_task_2_response_11_part_1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We would think the <code>Kiddie</code> and <code>Family</code> rides would tend lower in <code>max_height</code> and <code>top_speed</code> with the <code>Thrill</code> and <code>Extreme</code> tending higher, and this scatter-plot affirms that. Moreover, there appears to be a quadratic relationship between speed and height.</p>
+<ul>
+<li>Now we examine the height with the year the roller coaster was constructed, again across the <code>scale</code> variable.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(roller_coaster <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(),</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> year_opened, <span class="at">y =</span> max_height)) <span class="sc">+</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year Opened"</span>,</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Maximum Height"</span>,</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Year v Height by Scale of Rollercoaster"</span>,</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Scatter Plot"</span>) <span class="sc">+</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> scale))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw-4_files/figure-html/hw_4_task_2_response_11_part_2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This graph confirms that as time went by and technology improved, so did the heights of the roller coasters, with <code>Kiddie</code> scale being thought of later and <code>Extreme</code> considered more as Boomers approached adulthood.</p>
+<ol start="7" type="1">
+<li>Next, we use faceting to examine how <code>design</code> impacted <code>max_height</code> and <code>top_speed</code>.</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(roller_coaster <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(),</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> top_speed, <span class="at">y =</span> max_height)) <span class="sc">+</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Top Speed"</span>,</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Maximum Height"</span>,</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Speed v Height by Design of Rollercoaster"</span>,</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Scatter Plot"</span>) <span class="sc">+</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="sc">~</span> design)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw-4_files/figure-html/hw_4_task_2_response_12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The most common type of roller coaster is a <code>Sit Down</code> <code>design</code>, explaining why most of the data is in this <code>factor</code> level, and this also demonstrates that the faster and taller roller coaster tend to be more traditionally designed since the specialized roller coasters have lower speed and heights, comparatively.</p>
+<ol start="8" type="1">
+<li>Finally, we use faceting to examine how <code>scale</code> and <code>age_group</code> (of the roller coaster) impacts the <code>top_speed</code> and <code>number_of_iversions</code>.</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(roller_coaster <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(),</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> number_of_inversions, <span class="at">y =</span> top_speed)) <span class="sc">+</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Number of Inversions"</span>,</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Top Speed"</span>,</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Inversions v Speed by Age and Scale of Rollercoaster"</span>,</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Scatter Plot"</span>) <span class="sc">+</span></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_jitter</span>(<span class="at">width =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(age_group <span class="sc">~</span> scale)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw-4_files/figure-html/hw_4_task_2_response_13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This shows the newer roller coasters exhibit the <code>Extreme</code> scale and tend towards higher numbers of inversions and that, perhaps counter-intuitively, the top speed has a modest, if small, effect on the number of inversions.</p>
 
 
 </section>
